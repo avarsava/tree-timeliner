@@ -4,11 +4,9 @@ from subprocess import CalledProcessError
 import time
 import json
 
-import pdb
-
 TIME_FORMAT = "%b %d %Y %H:%M"
 def analyse_time(file, min_time, max_time):
-    current_time = parse_time(file["time"])
+    current_time = parse_in_time(file["time"])
     if current_time < min_time:
         min_time = current_time
     if current_time > max_time:
@@ -16,12 +14,15 @@ def analyse_time(file, min_time, max_time):
 
     if file["type"] == "directory":
         for nested_file in file["contents"]:
-            analyse_time(nested_file, min_time, max_time)
+            min_time, max_time = analyse_time(nested_file, min_time, max_time)
 
-    print(current_time)
+    return min_time, max_time
 
-def parse_time(time_value):
+def parse_in_time(time_value):
     return time.strptime(time_value, TIME_FORMAT)
+
+def parse_out_time(time_struct):
+    return time.strftime(TIME_FORMAT, time_struct)
 
 def main():
     parser = argparse.ArgumentParser(
@@ -55,10 +56,11 @@ def main():
         json_result = json.loads(result)
 
     # Step 2: Find the min and max timestamp
-    pdb.set_trace()
-    min_time = parse_time("Dec 31 2525 23:59")
-    max_time = parse_time("Jan 1 1900 00:00")
-    analyse_time(json_result[0], min_time, max_time)
+    min_time = parse_in_time("Dec 31 2525 23:59")
+    max_time = parse_in_time("Jan 1 1900 00:00")
+    min_time, max_time = analyse_time(json_result[0], min_time, max_time)
+
+    print("Earliest file at: {0}\nLast file at: {1}".format(parse_out_time(min_time), parse_out_time(max_time)))
 
 
 if __name__ == "__main__":
