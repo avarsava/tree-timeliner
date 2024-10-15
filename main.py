@@ -1,7 +1,7 @@
 import argparse
 import subprocess
 from subprocess import CalledProcessError
-import time
+import datetime
 import json
 
 TIME_FORMAT = "%b %d %Y %H:%M"
@@ -19,10 +19,23 @@ def analyse_time(file, min_time, max_time):
     return min_time, max_time
 
 def parse_in_time(time_value):
-    return time.strptime(time_value, TIME_FORMAT)
+    return datetime.datetime.strptime(time_value, TIME_FORMAT)
 
 def parse_out_time(time_struct):
-    return time.strftime(TIME_FORMAT, time_struct)
+    return time_struct.strftime(TIME_FORMAT)
+
+def increment_day(time_struct):
+    temp = parse_out_time(time_struct)
+
+# TODO: drops empty arrays in struct
+def slice_json(file, slice_time):
+    sliced_json=[]
+    if parse_in_time(file["time"]) <= slice_time:
+        sliced_json.append(file)
+    if file["type"] == "directory":
+        for nested_file in file["contents"]:
+            sliced_json.append(slice_json(nested_file, slice_time))
+    return sliced_json
 
 def main():
     parser = argparse.ArgumentParser(
@@ -61,6 +74,14 @@ def main():
     min_time, max_time = analyse_time(json_result[0], min_time, max_time)
 
     print("Earliest file at: {0}\nLast file at: {1}".format(parse_out_time(min_time), parse_out_time(max_time)))
+
+    # Step 3: Take snapshots between min and max time
+    slice_time = min_time
+    while slice_time <= max_time:
+        print(slice_json(json_result[0], min_time))
+        #slice_time = increment_day(slice_time)
+
+
 
 
 if __name__ == "__main__":
