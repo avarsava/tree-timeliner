@@ -22,8 +22,12 @@ def main():
         # -Q     Quote the names of files in double quotes.
         # -D     Print the date of the last modification time or if -c is used, the last status change time for the
         #   file listed.
+        # -J     Turn on JSON output. Outputs the directory tree as a JSON formatted array.
 
-        result = subprocess.check_output("tree -a -f --noreport -Q -D {0}".format(args.dir), shell=True, executable="/bin/bash")
+        result = subprocess.check_output("tree -a -f --noreport -Q -D -J {0}".format(args.dir),
+                                         shell=True, executable="/bin/bash")
+
+
 
     except CalledProcessError as cpe:
         result = cpe.output
