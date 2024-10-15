@@ -24,17 +24,18 @@ def parse_in_time(time_value):
 def parse_out_time(time_struct):
     return time_struct.strftime(TIME_FORMAT)
 
-def increment_day(time_struct):
-    temp = parse_out_time(time_struct)
+def increment_time(time_struct):
+    return time_struct + datetime.timedelta(minutes=1)
 
-# TODO: drops empty arrays in struct
 def slice_json(file, slice_time):
     sliced_json=[]
     if parse_in_time(file["time"]) <= slice_time:
         sliced_json.append(file)
     if file["type"] == "directory":
         for nested_file in file["contents"]:
-            sliced_json.append(slice_json(nested_file, slice_time))
+            more_sliced_json = slice_json(nested_file, slice_time)
+            if more_sliced_json: # Avoid appending []
+                sliced_json.append(more_sliced_json)
     return sliced_json
 
 def main():
@@ -77,9 +78,14 @@ def main():
 
     # Step 3: Take snapshots between min and max time
     slice_time = min_time
+    old_json = slice_json(json_result[0], slice_time)
+    print("{0}: {1}".format(slice_time, old_json))
     while slice_time <= max_time:
-        print(slice_json(json_result[0], min_time))
-        #slice_time = increment_day(slice_time)
+        slice_time = increment_time(slice_time)
+        new_json = slice_json(json_result[0], slice_time)
+        if len(old_json) < len(new_json):
+            old_json = new_json
+            print("{0}: {1}".format(slice_time, old_json))
 
 
 
