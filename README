@@ -1,0 +1,22 @@
+tree-timeliner
+
+Prerequisites:
+- Python 3.10
+- tree
+
+Creates many json files detailing all of the files modified up to the timestamp
+specified in the filename. Timestamps are chosen based on the set of unique
+modification times in the directory tree.
+
+Takes a root directory and optionally `--verbose` if you want a lot
+of console output.
+
+Intended for use on a directory structure not modified by humans, so that
+modification time is a decent substitute for creation time.
+
+Open the output in a diffing tool to understand the evolution of your
+directory over time.
+
+The original use case was a remote instrument writing many files to our
+servers and a need to understand what order the files get written out.
+
