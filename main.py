@@ -37,6 +37,10 @@ def main():
     parser.add_argument('dir',
                         action='store',
                         help='Directory for which to create a tree')
+    parser.add_argument("--noncumulative", "-n",
+                        action="store_const",
+                        const=True,
+                        default=False)
     parser.add_argument("--verbose",
                         "-v",
                         action='store_const',
@@ -75,9 +79,11 @@ def main():
     for i in range(0, len(dates)):
         max_date = dates[i]
         files = []
-        for j in range(0, i+1):
-            files.append(map[dates[j]])
-
+        if args.noncumulative:
+            files.append(map[dates[i]])
+        else:
+            for j in range(0, i+1):
+               files.append(map[dates[j]])
 
         with open("{0}_{1}".format(os.path.basename(args.dir), parse_out_time(max_date)), mode="w") as f:
             verbose_print(files, args.verbose)

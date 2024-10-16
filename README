@@ -9,7 +9,9 @@ specified in the filename. Timestamps are chosen based on the set of unique
 modification times in the directory tree.
 
 Takes a root directory and optionally `--verbose` if you want a lot
-of console output.
+of console output. Use `--noncumulative` if you want only the files
+from a specific timestamp, and not all files from the beginning
+until that timestamp.
 
 Intended for use on a directory structure not modified by humans, so that
 modification time is a decent substitute for creation time.
