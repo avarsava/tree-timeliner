@@ -3,8 +3,10 @@ import subprocess
 from subprocess import CalledProcessError
 import datetime
 import json
+import os.path
 
 TIME_FORMAT = "%b %d %Y %H:%M"
+
 def analyse_time(file, min_time, max_time):
     current_time = parse_in_time(file["time"])
     if current_time < min_time:
@@ -38,6 +40,10 @@ def slice_json(file, slice_time):
                 sliced_json.append(more_sliced_json)
     return sliced_json
 
+def verbose_print(str, verbose):
+    if verbose:
+        print(str)
+
 def main():
     parser = argparse.ArgumentParser(
         prog="tree-timeliner",
@@ -46,6 +52,11 @@ def main():
     parser.add_argument('dir',
                         action='store',
                         help='Directory for which to create a tree')
+    parser.add_argument("--verbose",
+                        "-v",
+                        action='store_const',
+                        const=True,
+                        default=False)
     args = parser.parse_args()
 
     # Step 1: get the tree
@@ -74,21 +85,22 @@ def main():
     max_time = parse_in_time("Jan 1 1900 00:00")
     min_time, max_time = analyse_time(json_result[0], min_time, max_time)
 
-    print("Earliest file at: {0}\nLast file at: {1}".format(parse_out_time(min_time), parse_out_time(max_time)))
+    verbose_print("Earliest file at: {0}\nLast file at: {1}"
+                  .format(parse_out_time(min_time), parse_out_time(max_time)),
+                  args.verbose)
 
     # Step 3: Take snapshots between min and max time
     slice_time = min_time
     old_json = slice_json(json_result[0], slice_time)
-    print("{0}: {1}".format(slice_time, old_json))
+    verbose_print("{0}: {1}".format(slice_time, old_json), args.verbose)
     while slice_time <= max_time:
         slice_time = increment_time(slice_time)
         new_json = slice_json(json_result[0], slice_time)
         if len(old_json) < len(new_json):
             old_json = new_json
-            print("{0}: {1}".format(slice_time, old_json))
-
-
-
+            verbose_print("{0}: {1}".format(slice_time, old_json), args.verbose)
+            with open("{0}_{1}.json".format(os.path.basename(args.dir), parse_out_time(slice_time)), mode='w') as f:
+                f.write(str(old_json))
 
 if __name__ == "__main__":
     main()
