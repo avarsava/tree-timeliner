@@ -4,22 +4,8 @@ import subprocess
 from subprocess import CalledProcessError
 import datetime
 import json
-import collections
 
 TIME_FORMAT = "%b %d %Y %H:%M"
-
-def analyse_time(file, min_time, max_time):
-    current_time = parse_in_time(file["time"])
-    if current_time < min_time:
-        min_time = current_time
-    if current_time > max_time:
-        max_time = current_time
-
-    if file["type"] == "directory":
-        for nested_file in file["contents"]:
-            min_time, max_time = analyse_time(nested_file, min_time, max_time)
-
-    return min_time, max_time
 
 def build_map(file, map):
     current_time = parse_in_time(file["time"])
